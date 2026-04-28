@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Beat the Pork">
+<meta name="theme-color" content="#0f1117">
+<title>Beat the Pork 🐷</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'Open Sans',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;min-height:-webkit-fill-available}
+.app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:env(safe-area-inset-bottom)}
+h1,h2,h3,.brand{font-family:'Exo 2',sans-serif}
+.brand{font-size:28px;font-weight:700;color:#4ade80;letter-spacing:-0.5px}
+.brand span{color:#86efac;font-size:16px;font-weight:400;display:block;letter-spacing:0}
+.screen{padding:20px;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.home-header{text-align:center;padding:40px 20px 30px}
+.pig-icon{font-size:56px;margin-bottom:12px}
+.user-btn{width:100%;padding:22px 20px;border-radius:16px;border:none;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:22px;font-weight:700;margin-bottom:14px;transition:transform 0.15s;display:flex;align-items:center;gap:16px;-webkit-appearance:none}
+.user-btn:active{transform:scale(0.97)}
+.user-btn.ben{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;box-shadow:0 4px 20px rgba(37,99,235,0.4)}
+.user-btn.deb{background:linear-gradient(135deg,#4a1942,#be185d);color:#fff;box-shadow:0 4px 20px rgba(190,24,93,0.4)}
+.user-btn .user-avatar{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.user-btn .user-info{text-align:left}
+.user-btn .user-cal{font-size:13px;font-weight:400;opacity:0.8}
+.dashboard-header{background:#1a1d27;border-radius:16px;padding:18px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Exo 2',sans-serif;font-weight:700;font-size:18px;flex-shrink:0}
+.avatar.ben{background:#2563eb}
+.avatar.deb{background:#be185d}
+.header-info{flex:1;min-width:0}
+.header-name{font-family:'Exo 2',sans-serif;font-size:20px;font-weight:700}
+.header-sub{font-size:12px;color:#9ca3af;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back-btn{background:none;border:none;color:#6b7280;cursor:pointer;font-size:24px;padding:4px 8px 4px 0;line-height:1}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-card{background:#1a1d27;border-radius:12px;padding:14px;text-align:center}
+.stat-val{font-family:'Exo 2',sans-serif;font-size:22px;font-weight:700;color:#4ade80}
+.stat-val.warn{color:#fb923c}
+.stat-label{font-size:11px;color:#6b7280;margin-top:3px}
+.score-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;font-family:'Exo 2',sans-serif;flex-shrink:0}
+.score-badge.green{background:#166534;color:#4ade80}
+.score-badge.amber{background:#78350f;color:#fbbf24}
+.score-badge.red{background:#7f1d1d;color:#f87171}
+.score-badge.none{background:#374151;color:#9ca3af}
+.action-btn{width:100%;padding:16px;border-radius:12px;border:1.5px solid #374151;background:#1a1d27;color:#e8eaf0;cursor:pointer;font-family:'Open Sans',sans-serif;font-size:15px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:12px;transition:border-color 0.15s,background 0.15s;-webkit-appearance:none;text-align:left}
+.action-btn:active{background:#22253a}
+.action-btn .btn-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.action-btn.primary{border-color:#2563eb;background:#1e3a5f;color:#93c5fd}
+.chart-card{background:#1a1d27;border-radius:12px;padding:16px;margin-bottom:16px}
+.chart-title{font-size:13px;font-weight:600;color:#9ca3af;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;display:flex;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.modal{background:#1a1d27;border-radius:20px 20px 0 0;padding:24px 20px;padding-bottom:calc(24px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-handle{width:40px;height:4px;background:#374151;border-radius:2px;margin:0 auto 20px;display:block}
+.modal-title{font-family:'Exo 2',sans-serif;font-size:20px;font-weight:700;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;color:#9ca3af;margin-bottom:6px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
+.form-input{width:100%;background:#0f1117;border:1.5px solid #374151;border-radius:10px;padding:13px 14px;color:#e8eaf0;font-family:'Open Sans',sans-serif;font-size:16px;outline:none;transition:border-color 0.15s;-webkit-appearance:none;appearance:none}
+.form-input:focus{border-color:#2563eb}
+.form-textarea{min-height:100px;resize:vertical;line-height:1.5}
+.input-with-mic{position:relative}
+.mic-btn{position:absolute;right:10px;top:10px;width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.15s;z-index:2;-webkit-appearance:none}
+.mic-btn.idle{background:#1f2937;color:#9ca3af}
+.mic-btn.listening{background:#dc2626;color:#fff;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.5)}50%{box-shadow:0 0 0 10px rgba(220,38,38,0)}}
+.voice-status{font-size:12px;color:#ef4444;margin-top:6px;display:flex;align-items:center;gap:6px;min-height:18px}
+.voice-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.submit-btn{width:100%;padding:17px;border-radius:12px;border:none;background:#16a34a;color:#fff;font-family:'Exo 2',sans-serif;font-size:17px;font-weight:700;cursor:pointer;-webkit-appearance:none;margin-top:8px}
+.submit-btn:active{background:#15803d}
+.submit-btn:disabled{background:#374151;color:#6b7280}
+.cancel-btn{width:100%;padding:15px;border-radius:12px;border:1.5px solid #374151;background:none;color:#9ca3af;font-family:'Open Sans',sans-serif;font-size:15px;cursor:pointer;margin-top:8px;-webkit-appearance:none}
+.ai-result{background:#0f1117;border-radius:12px;padding:16px;margin-top:16px;border:1.5px solid #1e3a5f}
+.ai-result-title{font-size:12px;color:#60a5fa;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:12px}
+.ai-metric{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1f2937}
+.ai-metric:last-child{border-bottom:none}
+.ai-metric-label{font-size:13px;color:#9ca3af}
+.ai-metric-val{font-size:13px;font-weight:600}
+.ai-summary{margin-top:12px;padding:12px;background:#162033;border-radius:8px;font-size:13px;color:#93c5fd;line-height:1.6}
+.saved-meal-card{background:#0f1117;border-radius:10px;padding:14px;margin-bottom:10px;border:1.5px solid #1f2937}
+.meal-name{font-weight:600;font-size:14px;margin-bottom:4px}
+.meal-details{font-size:12px;color:#6b7280}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.cal-dot{width:100%;aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:rgba(255,255,255,0.5)}
+.cal-dot.green{background:#166534}
+.cal-dot.amber{background:#92400e}
+.cal-dot.red{background:#7f1d1d}
+.cal-dot.empty{background:#1f2937}
+.streak-badge{background:#166534;color:#4ade80;border-radius:8px;padding:10px 14px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:14px;text-align:center;margin-bottom:16px}
+.insight-card{background:#162033;border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid #2563eb;font-size:13px;color:#93c5fd;line-height:1.5}
+.reminder{background:#78350f;border-radius:12px;padding:14px;margin-bottom:16px;border:1.5px solid #92400e;font-size:13px;color:#fbbf24;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.weight-entry{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1f2937}
+.weight-entry:last-child{border-bottom:none}
+.tab-bar{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{padding:8px 14px;border-radius:8px;border:1.5px solid #374151;background:none;color:#9ca3af;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Exo 2',sans-serif;text-transform:uppercase;letter-spacing:0.4px;-webkit-appearance:none;flex-shrink:0}
+.tab-btn.active{border-color:#2563eb;background:#1e3a5f;color:#93c5fd}
+.section-title{font-family:'Exo 2',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:#e8eaf0}
+.loading-state{text-align:center;padding:30px;color:#6b7280;font-size:14px}
+.spinner{width:26px;height:26px;border:2px solid #374151;border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.no-data{text-align:center;padding:40px 20px;color:#4b5563;font-size:14px}
+
+/* Weekly scoring */
+.week-card{background:#0f1117;border-radius:12px;padding:14px;margin-bottom:10px;border:1.5px solid #1f2937}
+.week-card.current{border-color:#2563eb}
+.week-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+.week-label{font-family:'Exo 2',sans-serif;font-size:14px;font-weight:700}
+.week-score-pill{font-family:'Exo 2',sans-serif;font-size:22px;font-weight:700;line-height:1}
+.week-score-pill.s5{color:#4ade80}
+.week-score-pill.s4{color:#86efac}
+.week-score-pill.s3{color:#fbbf24}
+.week-score-pill.s2{color:#fb923c}
+.week-score-pill.s1{color:#f87171}
+.week-day-dots{display:flex;gap:4px;margin-bottom:8px}
+.wdot{height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:rgba(255,255,255,0.6);flex:1}
+.wdot.green{background:#166534}
+.wdot.amber{background:#92400e}
+.wdot.red{background:#7f1d1d}
+.wdot.empty{background:#1f2937}
+.week-summary{font-size:12px;color:#6b7280;line-height:1.4}
+.week-grade{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;font-family:'Exo 2',sans-serif;margin-left:6px}
+.week-grade.A{background:#166534;color:#4ade80}
+.week-grade.B{background:#1e3a5f;color:#60a5fa}
+.week-grade.C{background:#78350f;color:#fbbf24}
+.week-grade.D{background:#7f1d1d;color:#f87171}
+
+select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const {useState, useEffect, useRef} = React;
+
+const USERS = {
+  ben: {name:"Ben", cal:1400, color:"ben"},
+  deb: {name:"Debbie", cal:1100, color:"deb"}
+};
+
+// ── Storage helpers ───────────────────────────────────────────────
+function gs(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+
+function initData(){
+  const d={};
+  ["ben","deb"].forEach(u=>{
+    d[u]={
+      weights: gs(`btp_${u}_weights`) || [],
+      checkins: gs(`btp_${u}_checkins`) || [],
+      meals: gs(`btp_${u}_meals`) || getDefaultMeals(u)
+    };
+  });
+  return d;
+}
+
+function getDefaultMeals(user){
+  const shared=[
+    {id:"m1",name:"Chicken & veg",owner:"shared",desc:"Grilled chicken breast with roasted vegetables",calories:380,protein:"High",carbs:"Low"},
+    {id:"m2",name:"Greek yoghurt bowl",owner:"shared",desc:"Full-fat Greek yoghurt with berries and mixed seeds",calories:250,protein:"Good",carbs:"Low"},
+    {id:"m3",name:"Eggs & salad",owner:"shared",desc:"Two scrambled or fried eggs with mixed leaf salad",calories:280,protein:"Good",carbs:"Very Low"},
+    {id:"m4",name:"Omelette lunch",owner:"shared",desc:"3-egg omelette with cheese and vegetables",calories:350,protein:"High",carbs:"Very Low"},
+    {id:"m5",name:"Steak & veg",owner:"shared",desc:"Sirloin steak with seasonal vegetables, no potatoes",calories:480,protein:"Very High",carbs:"Low"},
+    {id:"m6",name:"Tuna salad",owner:"shared",desc:"Tinned tuna with mixed leaves, cucumber and olive oil",calories:220,protein:"High",carbs:"Very Low"},
+    {id:"m7",name:"Chicken curry no rice",owner:"shared",desc:"Chicken curry without rice, with cauliflower or veg",calories:400,protein:"High",carbs:"Low"},
+  ];
+  const benM=[{id:"bm1",name:"Ben's standard breakfast",owner:"ben",desc:"Greek yoghurt, mixed nuts, berries",calories:300,protein:"Good",carbs:"Low"}];
+  const debM=[{id:"dm1",name:"Debbie's yoghurt bowl",owner:"deb",desc:"Greek yoghurt with seeds and a small amount of fruit",calories:200,protein:"Good",carbs:"Low"}];
+  return user==="ben"?[...shared,...benM]:[...shared,...debM];
+}
+
+function today(){return new Date().toISOString().split("T")[0]}
+function formatDate(d){return new Date(d+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"})}
+function formatDateFull(d){return new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}
+
+function weekStart(dateStr){
+  const d=new Date(dateStr+"T12:00:00");
+  const day=d.getDay();
+  const diff=day===0?-6:1-day;
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().split("T")[0];
+}
+
+function weekLabel(monStr){
+  const mon=new Date(monStr+"T12:00:00");
+  const sun=new Date(mon);sun.setDate(sun.getDate()+6);
+  return `${formatDate(monStr)} – ${formatDate(sun.toISOString().split("T")[0])}`;
+}
+
+function scoreWeek(days){
+  const vals={green:3,amber:2,red:1};
+  const logged=days.filter(d=>d.score);
+  if(!logged.length)return null;
+  const total=logged.reduce((s,d)=>s+(vals[d.score]||0),0);
+  return Math.round((total/(logged.length*3))*100);
+}
+
+function weekGrade(pct){
+  if(pct===null)return null;
+  if(pct>=80)return"A";if(pct>=60)return"B";if(pct>=40)return"C";return"D";
+}
+
+function groupByWeek(checkins){
+  const weeks={};
+  checkins.forEach(c=>{
+    const ws=weekStart(c.date);
+    if(!weeks[ws])weeks[ws]=[];
+    weeks[ws].push(c);
+  });
+  return Object.entries(weeks)
+    .sort((a,b)=>b[0].localeCompare(a[0]))
+    .map(([ws,days])=>{
+      const pct=scoreWeek(days);
+      const slots=[];
+      for(let i=0;i<7;i++){
+        const d=new Date(ws+"T12:00:00");d.setDate(d.getDate()+i);
+        const ds=d.toISOString().split("T")[0];
+        const ci=days.find(c=>c.date===ds);
+        slots.push({date:ds,day:["M","T","W","T","F","S","S"][i],score:ci?.score||null});
+      }
+      return{ws,days,slots,pct,grade:weekGrade(pct)};
+    });
+}
+
+function getStreak(checkins){
+  if(!checkins.length)return 0;
+  const sorted=[...checkins].sort((a,b)=>b.date.localeCompare(a.date));
+  let streak=0,cur=new Date();cur.setHours(12,0,0,0);
+  for(const ci of sorted){
+    const d=new Date(ci.date+"T12:00:00");
+    const diff=Math.round((cur-d)/(1000*60*60*24));
+    if(diff<=1&&ci.score==="green"){streak++;cur=d;}else if(diff>1)break;
+  }
+  return streak;
+}
+
+// ── Voice input hook ──────────────────────────────────────────────
+function useVoice(onResult){
+  const [listening,setListening]=useState(false);
+  const [supported,setSupported]=useState(true);
+  const ref=useRef(null);
+  useEffect(()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){setSupported(false);return;}
+    const r=new SR();
+    r.continuous=false;r.interimResults=false;r.lang="en-GB";
+    r.onresult=e=>{onResult(Array.from(e.results).map(r=>r[0].transcript).join(" "));setListening(false);};
+    r.onerror=()=>setListening(false);
+    r.onend=()=>setListening(false);
+    ref.current=r;
+  },[]);
+  function toggle(){
+    if(!ref.current)return;
+    if(listening){ref.current.stop();setListening(false);}
+    else{try{ref.current.start();setListening(true);}catch(e){setListening(false);}}
+  }
+  return{listening,supported,toggle};
+}
+
+// ── Voice textarea ────────────────────────────────────────────────
+function VoiceTxt({value,onChange,placeholder,minH=100}){
+  const {listening,supported,toggle}=useVoice(t=>onChange(value?(value+" "+t):t));
+  return(
+    <div className="input-with-mic">
+      <textarea
+        className="form-input form-textarea"
+        style={{minHeight:minH,paddingRight:supported?54:14}}
+        placeholder={placeholder}
+        value={value}
+        onChange={e=>onChange(e.target.value)}
+      />
+      {supported&&(
+        <button type="button" className={`mic-btn ${listening?"listening":"idle"}`} onClick={toggle} aria-label={listening?"Stop recording":"Start voice input"}>
+          {listening?"⏹":"🎙️"}
+        </button>
+      )}
+      {listening&&<div className="voice-status"><div className="voice-dot"/>Listening — speak now</div>}
+    </div>
+  );
+}
+
+// ── AI analysis ───────────────────────────────────────────────────
+async function aiAnalyse(text,user,meals){
+  const mealList=meals.map(m=>`"${m.name}": ${m.desc}, ~${m.calories} cal`).join("\n");
+  const prompt=`You are a supportive nutrition coach for the Fast 800 low-carbohydrate diet. Analyse this food log. Reply ONLY with valid JSON — no markdown, no explanation outside the JSON object.
+
+User: ${USERS[user].name}, daily calorie target: ${USERS[user].cal} kcal
+Saved meals the user may have referenced:\n${mealList}
+
+Food log: "${text}"
+
+Important scoring philosophy: judge the overall theme of the day. If someone eats broadly well but goes slightly over calories, lean toward amber not red. Green requires genuinely good Fast 800 alignment — good protein, low carbs, vegetables, minimal sugar and alcohol. Be warm and encouraging, not shaming.
+
+Respond ONLY with this JSON:
+{
+  "calories": <estimated number>,
+  "protein": "<Excellent|Good|Moderate|Low>",
+  "carbs": "<Very Low|Low|Moderate|High|Very High>",
+  "veg": "<Excellent|Good|Moderate|Low|Very Low>",
+  "alignment": "<Excellent|Good|Moderate|Poor>",
+  "score": "<green|amber|red>",
+  "summary": "<1-2 warm encouraging sentences specific to what they ate, max 40 words>",
+  "tip": "<One practical tip for tomorrow, max 25 words>"
+}`;
+
+  const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:600,
+      messages:[{role:"user",content:prompt}]
+    })
+  });
+  const data=await resp.json();
+  try{
+    const raw=(data.content?.[0]?.text||"{}").replace(/```json|```/g,"").trim();
+    return JSON.parse(raw);
+  }catch{return null;}
+}
+
+// ── Components ────────────────────────────────────────────────────
+function ScoreBadge({score}){
+  return <span className={`score-badge ${score||"none"}`}>{score?score[0].toUpperCase()+score.slice(1):"–"}</span>;
+}
+
+function WeeklyChart({weeks}){
+  const ref=useRef();const ch=useRef();
+  useEffect(()=>{
+    if(!ref.current)return;
+    const valid=[...weeks].filter(w=>w.pct!==null).reverse().slice(-12);
+    if(!valid.length)return;
+    if(ch.current)ch.current.destroy();
+    ch.current=new Chart(ref.current,{
+      type:"bar",
+      data:{
+        labels:valid.map(w=>new Date(w.ws+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"})),
+        datasets:[{
+          data:valid.map(w=>w.pct),
+          backgroundColor:valid.map(w=>w.grade==="A"?"rgba(74,222,128,0.85)":w.grade==="B"?"rgba(96,165,250,0.85)":w.grade==="C"?"rgba(251,191,36,0.85)":"rgba(248,113,113,0.85)"),
+          borderRadius:6,borderSkipped:false
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Score: ${c.parsed.y}%`}}},
+        scales:{
+          x:{ticks:{color:"#6b7280",font:{size:10}},grid:{display:false}},
+          y:{min:0,max:100,ticks:{color:"#6b7280",font:{size:10},callback:v=>`${v}%`},grid:{color:"#1f2937"}}
+        }
+      }
+    });
+    return()=>{if(ch.current)ch.current.destroy()};
+  },[weeks]);
+  if(!weeks.filter(w=>w.pct!==null).length)return <div className="no-data" style={{padding:"20px 0"}}>Log some days to see your weekly trend</div>;
+  return <canvas ref={ref} height="160"/>;
+}
+
+function WeightChart({weights}){
+  const ref=useRef();const ch=useRef();
+  useEffect(()=>{
+    if(!ref.current||!weights.length)return;
+    const s=[...weights].sort((a,b)=>a.date.localeCompare(b.date)).slice(-30);
+    if(ch.current)ch.current.destroy();
+    ch.current=new Chart(ref.current,{
+      type:"line",
+      data:{
+        labels:s.map(w=>formatDate(w.date)),
+        datasets:[{data:s.map(w=>w.weight),borderColor:"#4ade80",backgroundColor:"rgba(74,222,128,0.08)",borderWidth:2.5,pointBackgroundColor:"#4ade80",pointRadius:4,tension:0.35,fill:true}]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y} kg`}}},
+        scales:{
+          x:{ticks:{color:"#6b7280",font:{size:10}},grid:{color:"#1f2937"}},
+          y:{ticks:{color:"#6b7280",font:{size:10},callback:v=>`${v}kg`},grid:{color:"#1f2937"}}
+        }
+      }
+    });
+    return()=>{if(ch.current)ch.current.destroy()};
+  },[weights]);
+  if(!weights.length)return <div className="no-data">No weight data yet</div>;
+  return <canvas ref={ref} height="160"/>;
+}
+
+function WeekCard({week,isCurrentWeek}){
+  const scoreClass=week.grade==="A"?"s5":week.grade==="B"?"s4":week.grade==="C"?"s3":"s2";
+  const green=week.days.filter(d=>d.score==="green").length;
+  const amber=week.days.filter(d=>d.score==="amber").length;
+  const red=week.days.filter(d=>d.score==="red").length;
+  const gradeLabels={A:"Excellent week",B:"Good week",C:"Mixed week",D:"Tough week"};
+  return(
+    <div className={`week-card${isCurrentWeek?" current":""}`}>
+      <div className="week-card-header">
+        <div>
+          <div className="week-label">{isCurrentWeek?"This week":weekLabel(week.ws)}</div>
+          {week.pct!==null&&<div style={{fontSize:11,color:"#6b7280",marginTop:2}}>{week.days.filter(d=>d.score).length} of 7 days logged</div>}
+        </div>
+        {week.pct!==null?(
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div className={`week-score-pill ${scoreClass}`}>{week.pct}%</div>
+            <div><span className={`week-grade ${week.grade}`}>{week.grade}</span></div>
+          </div>
+        ):<span style={{fontSize:13,color:"#4b5563",flexShrink:0}}>No data yet</span>}
+      </div>
+      <div className="week-day-dots">
+        {week.slots.map((s,i)=>(
+          <div key={i} className={`wdot ${s.score||"empty"}`}>{s.day}</div>
+        ))}
+      </div>
+      {week.grade&&(
+        <div className="week-summary">
+          {gradeLabels[week.grade]}
+          {green>0&&` · ${green} 🟢`}{amber>0&&` ${amber} 🟡`}{red>0&&` ${red} 🔴`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Home screen ───────────────────────────────────────────────────
+function HomeScreen({onSelect}){
+  return(
+    <div className="screen">
+      <div className="home-header">
+        <div className="pig-icon">🐷</div>
+        <div className="brand">Beat the Pork<span>Low-carb accountability tracker</span></div>
+      </div>
+      {["ben","deb"].map(u=>(
+        <button key={u} className={`user-btn ${u}`} onClick={()=>onSelect(u)}>
+          <div className="user-avatar">{USERS[u].name[0]}</div>
+          <div className="user-info">
+            <div>{USERS[u].name}</div>
+            <div className="user-cal">{USERS[u].cal} kcal daily guide</div>
+          </div>
+          <span style={{marginLeft:"auto",fontSize:22}}>→</span>
+        </button>
+      ))}
+      <p style={{textAlign:"center",marginTop:28,fontSize:12,color:"#374151",lineHeight:1.6}}>
+        Your private weight &amp; food tracker.<br/>Data stays on your device.
+      </p>
+    </div>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────
+function Dashboard({user,data,setData,onBack}){
+  const [modal,setModal]=useState(null);
+  const [tab,setTab]=useState("today");
+  const ud=data[user];
+  const {weights,checkins,meals}=ud;
+
+  const latestW=weights.length?[...weights].sort((a,b)=>b.date.localeCompare(a.date))[0]:null;
+  const startW=weights.length?[...weights].sort((a,b)=>a.date.localeCompare(b.date))[0]:null;
+  const lost=startW&&latestW?+(startW.weight-latestW.weight).toFixed(1):0;
+  const streak=getStreak(checkins);
+  const todayCI=checkins.find(c=>c.date===today());
+  const last7=checkins.filter(c=>{
+    const d=new Date(c.date+"T12:00:00"),n=new Date();n.setHours(12,0,0,0);
+    return(n-d)/(1000*60*60*24)<=7;
+  });
+  const greenCount=last7.filter(c=>c.score==="green").length;
+  const amberCount=last7.filter(c=>c.score==="amber").length;
+  const hour=new Date().getHours();
+  const showReminder=hour>=19&&!todayCI;
+  const weeks=groupByWeek(checkins);
+  const currentWeek=weeks.find(w=>w.ws===weekStart(today()));
+  const calHistory=checkins
+    .filter(c=>c.date>=new Date(Date.now()-30*24*60*60*1000).toISOString().split("T")[0])
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  function saveWeight(e){
+    const u=[...weights.filter(w=>w.date!==e.date),e].sort((a,b)=>a.date.localeCompare(b.date));
+    const nd={...data,[user]:{...ud,weights:u}};setData(nd);ss(`btp_${user}_weights`,u);
+  }
+  function saveCI(e){
+    const u=[...checkins.filter(c=>c.date!==e.date),e];
+    const nd={...data,[user]:{...ud,checkins:u}};setData(nd);ss(`btp_${user}_checkins`,u);
+  }
+  function saveMeal(m){
+    const u=m.id?meals.map(x=>x.id===m.id?m:x):[...meals,{...m,id:"m"+Date.now()}];
+    const nd={...data,[user]:{...ud,meals:u}};setData(nd);ss(`btp_${user}_meals`,u);
+  }
+
+  return(
+    <div className="screen">
+      <div className="dashboard-header">
+        <button className="back-btn" onClick={onBack}>←</button>
+        <div className={`avatar ${user}`}>{USERS[user].name[0]}</div>
+        <div className="header-info">
+          <div className="header-name">{USERS[user].name}</div>
+          <div className="header-sub">{USERS[user].cal} kcal guide{latestW?` · ${latestW.weight} kg`:""}</div>
+        </div>
+        {todayCI&&<ScoreBadge score={todayCI.score}/>}
+      </div>
+
+      {showReminder&&(
+        <div className="reminder">
+          <span style={{fontSize:22,flexShrink:0}}>🔔</span>
+          <span style={{flex:1}}>Have you checked in on Beat the Pork today?</span>
+          <button style={{background:"none",border:"none",color:"#fbbf24",cursor:"pointer",fontSize:13,fontWeight:700,flexShrink:0}} onClick={()=>setModal("checkin")}>Check in →</button>
+        </div>
+      )}
+
+      <div className="tab-bar">
+        {[["today","Today"],["progress","Progress"],["weeks","Weeks"],["meals","Meals"],["history","History"]].map(([t,l])=>(
+          <button key={t} className={`tab-btn${tab===t?" active":""}`} onClick={()=>setTab(t)}>{l}</button>
+        ))}
+      </div>
+
+      {/* TODAY TAB */}
+      {tab==="today"&&(
+        <>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-val">{latestW?`${latestW.weight}kg`:"–"}</div>
+              <div className="stat-label">Current weight</div>
+            </div>
+            <div className="stat-card">
+              <div className={`stat-val ${lost>0?"":"warn"}`}>{lost>0?`-${lost}kg`:lost<0?`+${Math.abs(lost)}kg`:"–"}</div>
+              <div className="stat-label">Lost so far</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-val" style={{color:"#fbbf24"}}>{streak}</div>
+              <div className="stat-label">🟢 Green streak</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-val" style={{color:currentWeek?.grade==="A"?"#4ade80":currentWeek?.grade==="B"?"#60a5fa":currentWeek?.grade==="C"?"#fbbf24":currentWeek?.grade==="D"?"#f87171":"#6b7280"}}>
+                {currentWeek?.pct!=null?`${currentWeek.pct}%`:"–"}
+              </div>
+              <div className="stat-label">This week's score</div>
+            </div>
+          </div>
+
+          {currentWeek&&<WeekCard week={currentWeek} isCurrentWeek={true}/>}
+
+          {todayCI?.analysis&&(
+            <div className="ai-result" style={{marginBottom:16}}>
+              <div className="ai-result-title">Today's summary</div>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <ScoreBadge score={todayCI.score}/>
+                <span style={{fontSize:13,color:"#9ca3af"}}>~{todayCI.analysis.calories} kcal estimated</span>
+              </div>
+              <div style={{fontSize:13,color:"#93c5fd",lineHeight:1.6}}>{todayCI.analysis.summary}</div>
+            </div>
+          )}
+
+          <button className="action-btn primary" onClick={()=>setModal("checkin")}>
+            <div className="btn-icon" style={{background:"#2563eb"}}>📝</div>
+            {todayCI?"Update today's check-in":"Add today's check-in"}
+          </button>
+          <button className="action-btn" onClick={()=>setModal("log")}>
+            <div className="btn-icon" style={{background:"#374151"}}>🍽️</div>
+            Log food (voice or text)
+          </button>
+          <button className="action-btn" onClick={()=>setModal("weight")}>
+            <div className="btn-icon" style={{background:"#374151"}}>⚖️</div>
+            Log weight
+          </button>
+        </>
+      )}
+
+      {/* PROGRESS TAB */}
+      {tab==="progress"&&(
+        <>
+          {streak>0&&<div className="streak-badge">🔥 {streak} day green streak — keep it going!</div>}
+          <div className="chart-card">
+            <div className="chart-title">Weight over time</div>
+            <WeightChart weights={weights}/>
+          </div>
+          <div className="chart-card">
+            <div className="chart-title">Last 30 days</div>
+            {!calHistory.length?<div className="no-data">No check-ins yet</div>:(
+              <div className="calendar-grid">
+                {calHistory.map(c=>(
+                  <div key={c.date} className={`cal-dot ${c.score||"empty"}`} title={formatDate(c.date)}>
+                    {new Date(c.date+"T12:00:00").getDate()}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="section-title">Insights</div>
+          {greenCount>=5&&<div className="insight-card">🌟 You've had {greenCount} green days this week — fantastic consistency!</div>}
+          {lost>0&&<div className="insight-card">📉 Weight trend is moving in the right direction. {lost} kg down so far.</div>}
+          {amberCount>2&&<div className="insight-card">💛 A few amber days this week — still solid progress. Converting one to green next week would be great.</div>}
+          {streak>=7&&<div className="insight-card">🔥 Seven days of green — that's a real habit forming. Keep going!</div>}
+          {!checkins.length&&<div className="insight-card">Start logging your days to see personalised insights here.</div>}
+        </>
+      )}
+
+      {/* WEEKS TAB */}
+      {tab==="weeks"&&(
+        <>
+          <div className="chart-card">
+            <div className="chart-title">Weekly score trend</div>
+            <WeeklyChart weeks={weeks}/>
+          </div>
+          <div style={{display:"flex",gap:10,marginBottom:16,fontSize:11,color:"#6b7280"}}>
+            {[["A","≥80%","#4ade80"],["B","60–79%","#60a5fa"],["C","40–59%","#fbbf24"],["D","<40%","#f87171"]].map(([g,r,c])=>(
+              <div key={g} style={{display:"flex",alignItems:"center",gap:4}}>
+                <div style={{width:10,height:10,borderRadius:2,background:c}}/>
+                <span>{g}: {r}</span>
+              </div>
+            ))}
+          </div>
+          <div className="section-title">Week by week</div>
+          {!weeks.length&&<div className="no-data">No data yet — start logging your days!</div>}
+          {weeks.map(w=>(
+            <WeekCard key={w.ws} week={w} isCurrentWeek={w.ws===weekStart(today())}/>
+          ))}
+        </>
+      )}
+
+      {/* MEALS TAB */}
+      {tab==="meals"&&(
+        <>
+          <button className="action-btn primary" onClick={()=>setModal("addmeal")}>
+            <div className="btn-icon" style={{background:"#2563eb"}}>+</div>Save a new meal
+          </button>
+          <div className="section-title">Your saved meals</div>
+          {meals.filter(m=>m.owner===user||m.owner==="shared").map(m=>(
+            <div key={m.id} className="saved-meal-card">
+              <div className="meal-name">{m.name}</div>
+              <div className="meal-details">~{m.calories} kcal · Protein: {m.protein} · Carbs: {m.carbs}</div>
+              <div className="meal-details" style={{marginTop:4,color:"#6b7280"}}>{m.desc}</div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* HISTORY TAB */}
+      {tab==="history"&&(
+        <>
+          <div className="section-title">Check-in history</div>
+          {!checkins.length&&<div className="no-data">No check-ins yet. Start logging!</div>}
+          {[...checkins].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30).map(c=>(
+            <div key={c.date} className="saved-meal-card">
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                <span style={{fontWeight:600,fontSize:14}}>{formatDateFull(c.date)}</span>
+                <ScoreBadge score={c.score}/>
+              </div>
+              {c.analysis&&<div style={{fontSize:12,color:"#6b7280",marginBottom:4}}>~{c.analysis.calories} kcal estimated</div>}
+              {c.food&&<div style={{fontSize:12,color:"#9ca3af",lineHeight:1.4}}>{c.food.substring(0,140)}{c.food.length>140?"…":""}</div>}
+              {c.analysis?.summary&&<div style={{fontSize:12,color:"#60a5fa",marginTop:6,lineHeight:1.4}}>{c.analysis.summary}</div>}
+              {c.analysis?.tip&&<div style={{fontSize:11,color:"#4b5563",marginTop:4,fontStyle:"italic"}}>💡 {c.analysis.tip}</div>}
+            </div>
+          ))}
+          <div className="section-title" style={{marginTop:20}}>Weight log</div>
+          {!weights.length&&<div className="no-data">No weights logged yet.</div>}
+          {[...weights].sort((a,b)=>b.date.localeCompare(a.date)).map(w=>(
+            <div key={w.date} className="weight-entry">
+              <span style={{fontSize:14}}>{formatDateFull(w.date)}</span>
+              <div style={{textAlign:"right"}}>
+                <span style={{fontWeight:700,color:"#4ade80",fontSize:16}}>{w.weight} kg</span>
+                {w.notes&&<div style={{fontSize:11,color:"#6b7280"}}>{w.notes}</div>}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* MODALS */}
+      {modal&&(
+        <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setModal(null)}}>
+          {modal==="weight"&&<WeightModal onSave={e=>{saveWeight(e);setModal(null)}} onCancel={()=>setModal(null)}/>}
+          {modal==="checkin"&&<CheckinModal user={user} meals={meals} existing={todayCI} onSave={e=>{saveCI(e);setModal(null)}} onCancel={()=>setModal(null)}/>}
+          {modal==="log"&&<FoodLogModal user={user} meals={meals} onSave={e=>{saveCI({...todayCI||{date:today()},food:(todayCI?.food?todayCI.food+"\n":"")+e.food,score:e.score,analysis:e.analysis});setModal(null)}} onCancel={()=>setModal(null)}/>}
+          {modal==="addmeal"&&<AddMealModal user={user} onSave={e=>{saveMeal(e);setModal(null)}} onCancel={()=>setModal(null)}/>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Weight modal ──────────────────────────────────────────────────
+function WeightModal({onSave,onCancel}){
+  const [date,setDate]=useState(today());
+  const [weight,setWeight]=useState("");
+  const [notes,setNotes]=useState("");
+  return(
+    <div className="modal">
+      <span className="modal-handle"/>
+      <div className="modal-title">⚖️ Log weight</div>
+      <div className="form-group">
+        <label className="form-label">Date</label>
+        <input type="date" className="form-input" value={date} max={today()} onChange={e=>setDate(e.target.value)}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Weight (kg)</label>
+        <input type="number" step="0.1" inputMode="decimal" className="form-input" placeholder="e.g. 85.4" value={weight} onChange={e=>setWeight(e.target.value)}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Notes (optional)</label>
+        <input type="text" className="form-input" placeholder="Any context — time of day, after exercise…" value={notes} onChange={e=>setNotes(e.target.value)}/>
+      </div>
+      <button className="submit-btn" disabled={!weight} onClick={()=>onSave({date,weight:parseFloat(weight),notes})}>Save weight</button>
+      <button className="cancel-btn" onClick={onCancel}>Cancel</button>
+    </div>
+  );
+}
+
+// ── Check-in modal ────────────────────────────────────────────────
+function CheckinModal({user,meals,existing,onSave,onCancel}){
+  const [food,setFood]=useState(existing?.food||"");
+  const [snack,setSnack]=useState(existing?.snack||"no");
+  const [alcohol,setAlcohol]=useState(existing?.alcohol||"no");
+  const [hungry,setHungry]=useState(existing?.hungry||"ok");
+  const [wellnote,setWellnote]=useState(existing?.wellnote||"");
+  const [improv,setImprov]=useState(existing?.improv||"");
+  const [loading,setLoading]=useState(false);
+  const [result,setResult]=useState(existing?.analysis||null);
+  const [score,setScore]=useState(existing?.score||null);
+
+  const {listening:wL,supported:wS,toggle:wT}=useVoice(t=>setWellnote(v=>v?(v+" "+t):t));
+  const {listening:iL,supported:iS,toggle:iT}=useVoice(t=>setImprov(v=>v?(v+" "+t):t));
+
+  async function analyse(){
+    if(!food.trim())return;
+    setLoading(true);
+    try{
+      const r=await aiAnalyse(`${food}. Snacking today: ${snack}. Alcohol today: ${alcohol}.`,user,meals);
+      if(r){setResult(r);setScore(r.score);}
+    }catch(e){console.error(e);}
+    setLoading(false);
+  }
+
+  const sel={background:"#0f1117",border:"1.5px solid #374151",borderRadius:10,padding:"13px 36px 13px 14px",color:"#e8eaf0",fontFamily:"Open Sans",fontSize:16,width:"100%",outline:"none",WebkitAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center"};
+
+  return(
+    <div className="modal">
+      <span className="modal-handle"/>
+      <div className="modal-title">📝 Daily check-in</div>
+
+      <div className="form-group">
+        <label className="form-label">What did you eat today? <span style={{color:"#4b5563",fontWeight:400,textTransform:"none",letterSpacing:0,fontSize:11}}>— speak or type</span></label>
+        <VoiceTxt value={food} onChange={setFood} placeholder="Describe your meals — breakfast, lunch, dinner, snacks. Be as casual as you like." minH={110}/>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+        <div>
+          <label className="form-label">Snacking?</label>
+          <select style={sel} value={snack} onChange={e=>setSnack(e.target.value)}>
+            <option value="no">None</option>
+            <option value="light">Light</option>
+            <option value="moderate">Moderate</option>
+            <option value="heavy">Heavy</option>
+          </select>
+        </div>
+        <div>
+          <label className="form-label">Alcohol?</label>
+          <select style={sel} value={alcohol} onChange={e=>setAlcohol(e.target.value)}>
+            <option value="no">None</option>
+            <option value="light">1–2 drinks</option>
+            <option value="moderate">3–4 drinks</option>
+            <option value="heavy">5+ drinks</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">How hungry were you?</label>
+        <select style={sel} value={hungry} onChange={e=>setHungry(e.target.value)}>
+          <option value="satisfied">Not very hungry — satisfied</option>
+          <option value="ok">Manageable — felt ok</option>
+          <option value="hungry">Quite hungry</option>
+          <option value="very">Very hungry / struggled</option>
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">What went well?</label>
+        <div style={{position:"relative"}}>
+          <input type="text" className="form-input" style={{paddingRight:wS?54:14}} placeholder="e.g. Stuck to plan at lunch" value={wellnote} onChange={e=>setWellnote(e.target.value)}/>
+          {wS&&<button type="button" className={`mic-btn ${wL?"listening":"idle"}`} onClick={wT}>{wL?"⏹":"🎙️"}</button>}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">What to improve tomorrow?</label>
+        <div style={{position:"relative"}}>
+          <input type="text" className="form-input" style={{paddingRight:iS?54:14}} placeholder="e.g. Avoid evening snacking" value={improv} onChange={e=>setImprov(e.target.value)}/>
+          {iS&&<button type="button" className={`mic-btn ${iL?"listening":"idle"}`} onClick={iT}>{iL?"⏹":"🎙️"}</button>}
+        </div>
+      </div>
+
+      {!result&&(
+        <button className="action-btn primary" style={{marginBottom:12}} onClick={analyse} disabled={!food.trim()||loading}>
+          <div className="btn-icon" style={{background:"#2563eb"}}>✨</div>
+          {loading?"Analysing your day…":"Analyse with AI"}
+        </button>
+      )}
+
+      {loading&&<div className="loading-state"><div className="spinner"/><div>Crunching your day…</div></div>}
+
+      {result&&(
+        <div className="ai-result">
+          <div className="ai-result-title">AI analysis</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <ScoreBadge score={score}/>
+            <span style={{fontSize:12,color:"#9ca3af"}}>~{result.calories} kcal estimated</span>
+          </div>
+          {[["Protein",result.protein],["Carbs",result.carbs],["Veg & fibre",result.veg],["Fast 800 alignment",result.alignment]].map(([l,v])=>(
+            <div key={l} className="ai-metric">
+              <span className="ai-metric-label">{l}</span>
+              <span className="ai-metric-val" style={{color:["Excellent","High","Very High"].includes(v)?"#4ade80":["Good","Moderate","Low"].includes(v)?"#fbbf24":"#f87171"}}>{v}</span>
+            </div>
+          ))}
+          <div className="ai-summary">{result.summary}</div>
+          {result.tip&&<div style={{marginTop:8,fontSize:12,color:"#6b7280",fontStyle:"italic"}}>💡 {result.tip}</div>}
+          <button style={{background:"none",border:"none",color:"#60a5fa",fontSize:12,cursor:"pointer",marginTop:10,padding:0}} onClick={()=>{setResult(null);setScore(null);}}>Re-analyse ↺</button>
+        </div>
+      )}
+
+      <button className="submit-btn" disabled={!food.trim()} onClick={()=>onSave({date:today(),food,snack,alcohol,hungry,wellnote,improv,score,analysis:result})}>
+        Save check-in
+      </button>
+      <button className="cancel-btn" onClick={onCancel}>Cancel</button>
+    </div>
+  );
+}
+
+// ── Food log modal ────────────────────────────────────────────────
+function FoodLogModal({user,meals,onSave,onCancel}){
+  const [food,setFood]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [result,setResult]=useState(null);
+
+  async function analyse(){
+    if(!food.trim())return;
+    setLoading(true);
+    try{const r=await aiAnalyse(food,user,meals);if(r)setResult(r);}
+    catch(e){console.error(e);}
+    setLoading(false);
+  }
+
+  return(
+    <div className="modal">
+      <span className="modal-handle"/>
+      <div className="modal-title">🍽️ Log food</div>
+      <div className="form-group">
+        <label className="form-label">Describe what you ate — speak or type</label>
+        <VoiceTxt value={food} onChange={setFood} placeholder={`e.g. "Breakfast was Greek yoghurt with nuts, lunch was chicken and salad, dinner was steak with veg and a glass of wine"`} minH={130}/>
+      </div>
+      {!result&&(
+        <button className="action-btn primary" onClick={analyse} disabled={!food.trim()||loading}>
+          <div className="btn-icon" style={{background:"#2563eb"}}>✨</div>
+          {loading?"Interpreting your food…":"Analyse with AI"}
+        </button>
+      )}
+      {loading&&<div className="loading-state"><div className="spinner"/><div>Interpreting your food…</div></div>}
+      {result&&(
+        <>
+          <div className="ai-result">
+            <div className="ai-result-title">Food analysis</div>
+            <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:10}}>
+              <ScoreBadge score={result.score}/>
+              <span style={{fontSize:12,color:"#9ca3af"}}>~{result.calories} kcal</span>
+            </div>
+            <div className="ai-summary">{result.summary}</div>
+            {result.tip&&<div style={{marginTop:8,fontSize:12,color:"#6b7280",fontStyle:"italic"}}>💡 {result.tip}</div>}
+          </div>
+          <button className="submit-btn" onClick={()=>onSave({food,score:result.score,analysis:result})}>Save to today</button>
+        </>
+      )}
+      <button className="cancel-btn" onClick={onCancel}>Cancel</button>
+    </div>
+  );
+}
+
+// ── Add meal modal ────────────────────────────────────────────────
+function AddMealModal({user,onSave,onCancel}){
+  const [name,setName]=useState("");
+  const [desc,setDesc]=useState("");
+  const [calories,setCalories]=useState("");
+  const [protein,setProtein]=useState("Good");
+  const [carbs,setCarbs]=useState("Low");
+
+  const sel={background:"#0f1117",border:"1.5px solid #374151",borderRadius:10,padding:"13px 36px 13px 14px",color:"#e8eaf0",fontFamily:"Open Sans",fontSize:16,width:"100%",outline:"none",WebkitAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center"};
+
+  return(
+    <div className="modal">
+      <span className="modal-handle"/>
+      <div className="modal-title">💾 Save a meal</div>
+      <div className="form-group">
+        <label className="form-label">Meal name</label>
+        <input type="text" className="form-input" placeholder="e.g. Ben's standard breakfast" value={name} onChange={e=>setName(e.target.value)}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Description</label>
+        <VoiceTxt value={desc} onChange={setDesc} placeholder="What's in it?" minH={70}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Approx calories</label>
+        <input type="number" inputMode="numeric" className="form-input" placeholder="e.g. 350" value={calories} onChange={e=>setCalories(e.target.value)}/>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:8}}>
+        <div>
+          <label className="form-label">Protein</label>
+          <select style={sel} value={protein} onChange={e=>setProtein(e.target.value)}>
+            {["Very High","High","Good","Moderate","Low"].map(o=><option key={o}>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="form-label">Carbs</label>
+          <select style={sel} value={carbs} onChange={e=>setCarbs(e.target.value)}>
+            {["Very Low","Low","Moderate","High","Very High"].map(o=><option key={o}>{o}</option>)}
+          </select>
+        </div>
+      </div>
+      <button className="submit-btn" disabled={!name||!desc} onClick={()=>onSave({name,desc,calories:parseInt(calories)||0,protein,carbs,owner:user})}>
+        Save meal
+      </button>
+      <button className="cancel-btn" onClick={onCancel}>Cancel</button>
+    </div>
+  );
+}
+
+// ── App root ──────────────────────────────────────────────────────
+function App(){
+  const [user,setUser]=useState(null);
+  const [data,setData]=useState(initData);
+  return user
+    ?<div className="app"><Dashboard user={user} data={data} setData={setData} onBack={()=>setUser(null)}/></div>
+    :<div className="app"><HomeScreen onSelect={setUser}/></div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
